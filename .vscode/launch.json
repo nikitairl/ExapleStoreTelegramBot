@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "name": "Отладчик Python: app.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "app.py",
+            "console": "integratedTerminal"
+        },
+    ]
+}
