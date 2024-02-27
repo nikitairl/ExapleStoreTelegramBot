@@ -1,21 +1,33 @@
-from aiogram.types import (KeyboardButton, ReplyKeyboardMarkup,
-                           ReplyKeyboardRemove)
+from aiogram.types import KeyboardButton
 
-start_kb = ReplyKeyboardMarkup(
-    keyboard=[
-        [
-            KeyboardButton(text="Menu"),
-            KeyboardButton(text="About"),
-            KeyboardButton(text="Payment info"),
-        ],
-        [
-            KeyboardButton(text="Shipping info"),
-            KeyboardButton(text="Feedback"),
-        ]
-    ],
-    resize_keyboard=True,
-    input_field_placeholder="What do you want?",
-)
+from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 
-del_kb = ReplyKeyboardRemove()
+def get_keyboard(
+    *buttons: str,
+    placeholder: str = None,
+    request_contact: int = None,
+    request_location: int = None,
+    sizes: tuple[int] = (2,),
+):
+    """_summary_
+
+    Example Args:
+        buttons=("Menu", "About", "Payment info", "Shipping info", "Feedback"),
+        placeholder="What do you want?",
+        request_contact=4 (index of a button),
+        sizes=(2,2,1),
+    """
+    keyboard = ReplyKeyboardBuilder()
+
+    for index, text in enumerate(buttons, start=0):
+        if request_contact and request_contact == index:
+            keyboard.add(KeyboardButton(text=text, request_contact=True))
+        elif request_location and request_location == index:
+            keyboard.add(KeyboardButton(text=text, request_location=True))
+        else:
+            keyboard.add(KeyboardButton(text=text))
+
+    return keyboard.adjust(*sizes).as_markup(
+        resize_keyboard=True, input_field_placeholder=placeholder
+    )
