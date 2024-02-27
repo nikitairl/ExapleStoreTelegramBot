@@ -39,11 +39,3 @@ async def main():
     await dp.start_polling(bot, allowed_updates=ALLOWED)
 
 asyncio.run(main())
-
-
-
-
-"""
-https://www.youtube.com/watch?v=55w2QpPGC-E
-23:20
-"""
