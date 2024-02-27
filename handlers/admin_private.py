@@ -2,10 +2,12 @@ from aiogram import F, Router, types
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from db.crud import crud_add_product
+from exceptions import ADD_PRODUCT_ERROR
 from filters.chats import ChatTypeFilter, IsAdmin
 from keyboards.reply import get_keyboard
-
 
 admin_router = Router()
 admin_router.message.filter(ChatTypeFilter(["private"]), IsAdmin())
@@ -75,6 +77,7 @@ async def cancel_handler(message: types.Message, state: FSMContext) -> None:
     await state.clear()
     await message.answer("Cancelled", reply_markup=ADMIN_KB)
 
+
 @admin_router.message(StateFilter('*'), Command("back"))
 @admin_router.message(StateFilter('*'), F.text.casefold() == "back")
 async def back_step_handler(message: types.Message, state: FSMContext) -> None:
@@ -110,9 +113,9 @@ async def add_name(message: types.Message, state: FSMContext):
 
 
 @admin_router.message(AddProduct.name)
-async def add_name2(message: types.Message, state: FSMContext):
+async def add_name_bad_data(message: types.Message, state: FSMContext):
     await message.answer(
-        "Unable to add product with that name. \n Please enter the name again"
+        "Wrong data? Fix and repeat"
     )
 
 
@@ -124,9 +127,9 @@ async def add_description(message: types.Message, state: FSMContext):
 
 
 @admin_router.message(AddProduct.description)
-async def add_description2(message: types.Message, state: FSMContext):
+async def add_description_bad_data(message: types.Message, state: FSMContext):
     await message.answer(
-        "Unable to add product. \n Please fix and enter the description again"
+        "Wrong data? Fix and repeat"
     )
 
 
@@ -144,19 +147,28 @@ async def add_price(message: types.Message, state: FSMContext):
 
 
 @admin_router.message(AddProduct.price)
-async def add_price2(message: types.Message, state: FSMContext):
-    await message.answer("Wrong data. Please enter the price again")
+async def add_price_bad_data(message: types.Message, state: FSMContext):
+    await message.answer("Wrong data? Fix and repeat")
 
 
 @admin_router.message(AddProduct.image, F.photo)
-async def add_image(message: types.Message, state: FSMContext):
+async def add_image(
+    message: types.Message,
+    state: FSMContext,
+    session: AsyncSession
+):
     await state.update_data(image=message.photo[-1].file_id)
     await message.answer("Success! Product added", reply_markup=ADMIN_KB)
     data = await state.get_data()
+    try:
+        await crud_add_product(session, data)
+    except ADD_PRODUCT_ERROR:
+        await session.rollback()
+        await message.answer(f"Error: {ADD_PRODUCT_ERROR}")
     await message.answer(str(data))
     await state.clear()
 
 
 @admin_router.message(AddProduct.image)
-async def add_image2(message: types.Message, state: FSMContext):
-    await message.answer("Product image")
+async def add_image_wrong_data(message: types.Message, state: FSMContext):
+    await message.answer("Wrong data? Fix and repeat")
