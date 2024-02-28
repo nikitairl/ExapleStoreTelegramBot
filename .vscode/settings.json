@@ -13,5 +13,8 @@
             "database": "my_db.db",
             "username": "nik"
         }
+    ],
+    "cSpell.words": [
+        "btns"
     ]
 }

@@ -1,13 +1,15 @@
 from aiogram import F, Router, types
 from aiogram.filters import Command, CommandStart, or_f
 from aiogram.utils.formatting import Bold, as_list, as_marked_section
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from constants import ABOUT
+from utils.constants import ABOUT
+from db.crud import crud_get_products
 from filters.chats import ChatTypeFilter
 from keyboards.reply import get_keyboard
 
 user_private_router = Router()
-user_private_router.message.filter(ChatTypeFilter(['private']))
+user_private_router.message.filter(ChatTypeFilter(["private"]))
 
 
 @user_private_router.message(CommandStart())
@@ -27,7 +29,15 @@ async def on_start(message: types.Message):
 
 
 @user_private_router.message(or_f(Command("menu"), F.text.lower() == "menu"))
-async def menu_handler(message: types.Message):
+async def menu_handler(message: types.Message, session: AsyncSession):
+    for product in await crud_get_products(session):
+        await message.answer_photo(
+            product.image,
+            caption=(
+                f"Name: {product.name}\nDescription: "
+                f"{product.description}\nPrice: {product.price}"
+            ),
+        )
     await message.answer("Menu")
 
 

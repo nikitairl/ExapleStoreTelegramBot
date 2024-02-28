@@ -13,25 +13,31 @@ async def crud_get_products(session: AsyncSession):
 async def crud_get_product(session: AsyncSession, id: int):
     query = select(Product).where(Product.id == id)
     product = await session.execute(query)
-    return product.scalars()
+    return product.scalars().first()
 
 
 async def crud_add_product(session: AsyncSession, data: dict):
-    session.add(Product(
-        name=data["name"],
-        description=data["description"],
-        price=data["price"],
-        image=data["image"],
-    ))
+    session.add(
+        Product(
+            name=data["name"],
+            description=data["description"],
+            price=data["price"],
+            image=data["image"],
+        )
+    )
     await session.commit()
 
 
 async def crud_update_product(session: AsyncSession, id: int, data: dict):
-    query = update(Product).where(Product.id == id).values(
-        name=data["name"],
-        description=data["description"],
-        price=data["price"],
-        image=data["image"],
+    query = (
+        update(Product)
+        .where(Product.id == id)
+        .values(
+            name=data["name"],
+            description=data["description"],
+            price=data["price"],
+            image=data["image"],
+        )
     )
     await session.execute(query)
     await session.commit()

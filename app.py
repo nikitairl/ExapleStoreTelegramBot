@@ -6,12 +6,12 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.strategy import FSMStrategy
 from dotenv import load_dotenv
 
-from constants import ALLOWED, PRIVATE_MENU
 from db.db import create_db, drop_db, session_maker
 from handlers.admin_private import admin_router
 from handlers.user_group import user_group_router
 from handlers.user_private import user_private_router
 from middlewares.db_middleware import DataBaseSession
+from utils.constants import ALLOWED, PRIVATE_MENU
 
 load_dotenv()
 
@@ -34,7 +34,7 @@ async def on_startup():
 
 
 async def on_shutdown():
-    print('Bot is shutting down...')
+    print("Bot is shutting down...")
 
 
 async def main():
@@ -43,9 +43,9 @@ async def main():
     dp.update.middleware(DataBaseSession(session=session_maker))
     await bot.delete_webhook(drop_pending_updates=True)
     await bot.set_my_commands(
-        commands=PRIVATE_MENU,
-        scope=types.BotCommandScopeAllPrivateChats()
+        commands=PRIVATE_MENU, scope=types.BotCommandScopeAllPrivateChats()
     )
     await dp.start_polling(bot, allowed_updates=ALLOWED)
+
 
 asyncio.run(main())
